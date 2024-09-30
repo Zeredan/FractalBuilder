@@ -37,6 +37,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.CutCornerShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Surface
@@ -113,13 +114,14 @@ data class Complex(
 fun formula(Zk: Complex, Z0 : Complex) : Complex
 {
     return Zk*Zk*Zk*Zk + Z0
+    //return Zk*Zk*Zk + Complex(-0.7f, 0.27015f)
 }
 
 fun getPointIterations(Z0: Complex) : Int{
     if (Z0.modulo > 2f) return 0
     var Zk = Z0
     var iterationCount = 0
-    while(iterationCount < 10 && Zk.modulo < 2f)
+    while(iterationCount < 50 && Zk.modulo < 2f)
     {
         Zk = formula(Zk, Z0)
         ++iterationCount
@@ -213,10 +215,12 @@ fun Task1Screen(){
                 .height(30.dp),
             onClick = {
                 vm.processImage((width), (width), density)
-            }
+            },
+            enabled = !vm.isCalculating,
+            colors = ButtonDefaults.buttonColors(containerColor = Color.Green, disabledContainerColor = Color.Yellow)
         )
         {
-            Text("Вычислить", color = Color.Green)
+            Text("Вычислить", color = Color.Magenta, fontSize = 24.sp)
         }
     }
 }
