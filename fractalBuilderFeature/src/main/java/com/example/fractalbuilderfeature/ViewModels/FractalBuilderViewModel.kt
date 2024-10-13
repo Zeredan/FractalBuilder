@@ -1,30 +1,23 @@
-package com.example.cg_lab2.ViewModels
+package com.example.fractalbuilderfeature.ViewModels
 
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.toArgb
-import androidx.compose.ui.unit.Density
-import androidx.compose.ui.unit.IntOffset
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.cg_lab2.ui.theme.Screens.Complex
-import com.example.cg_lab2.ui.theme.Screens.createBitmap
-import com.example.cg_lab2.ui.theme.Screens.getPointIterations
-import kotlinx.coroutines.CoroutineScope
+import com.example.fractalbuilderfeature.BusinessLogic.Complex
+import com.example.fractalbuilderfeature.BusinessLogic.createBitmap
+import com.example.fractalbuilderfeature.BusinessLogic.getPointIterations
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
-class Task1ViewModel : ViewModel() {
+class FractalBuilderViewModel : ViewModel() {
 
     var leftBound by mutableStateOf(-2.2f)
     var rightBound by mutableStateOf(1f)
@@ -61,7 +54,7 @@ class Task1ViewModel : ViewModel() {
             rightBound = rightBound1
             bottomBound = bottomBound1
             topBound = topBound1
-
+            
             fractureBitmap = withContext(Dispatchers.Default) {
                 val colorsArray = Array(height) { i ->
                     Array(width) { j ->
