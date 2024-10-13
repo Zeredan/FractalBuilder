@@ -38,6 +38,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
@@ -47,6 +48,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.LinearGradientShader
 import androidx.compose.ui.graphics.Shader
 import androidx.compose.ui.graphics.ShaderBrush
+import androidx.compose.ui.input.pointer.pointerInteropFilter
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.style.TextAlign
@@ -188,6 +190,7 @@ class MainActivity : ComponentActivity() {
         var intstr by mutableStateOf(0)
     }
 
+    @OptIn(ExperimentalComposeUiApi::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
@@ -199,6 +202,19 @@ class MainActivity : ComponentActivity() {
                 )
                 {
                     RootComposable()
+                    /*Box(
+
+                    ){
+                        Box(
+                            modifier = Modifier
+                                .size(400.dp)
+                                .background(Color.Green)
+                                .pointerInteropFilter { me ->
+                                    println("${me.action}|||${me.x}||${me.y}")
+                                    true
+                                }
+                        )
+                    }*/
                 }
             }
         }

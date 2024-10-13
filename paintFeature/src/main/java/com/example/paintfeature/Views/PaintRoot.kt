@@ -1,6 +1,7 @@
 package com.example.paintfeature.Views
 
 import android.annotation.SuppressLint
+import android.view.MotionEvent
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
@@ -33,13 +34,26 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.SnackbarVisuals
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.input.pointer.PointerEventType
+import androidx.compose.ui.input.pointer.RequestDisallowInterceptTouchEvent
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.input.pointer.pointerInteropFilter
+import androidx.compose.ui.input.pointer.positionChange
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.layout.positionInWindow
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -49,7 +63,7 @@ import kotlinx.coroutines.launch
 
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
-@OptIn(ExperimentalFoundationApi::class)
+@OptIn(ExperimentalFoundationApi::class, ExperimentalComposeUiApi::class)
 @Composable
 fun PaintRoot() {
     val vm = viewModel<PaintViewModel>()
@@ -75,28 +89,41 @@ fun PaintRoot() {
                     .clip(RoundedCornerShape(10.dp))
                     .fillMaxWidth()
                     .aspectRatio(1f)
+                    .onSizeChanged {
+                        vm.canvasSizeStateFlow.value = it
+                    }
             )
             {
                 Canvas(
                     modifier = Modifier
                         .background(Color.Green)
                         .fillMaxSize()
-                        .pointerInput(1){
-                            this.detectDragGestures(
-                                onDragStart = {
-
-                                },
-                                onDrag = {a, b ->
-                                    println("DRAGGING:   $b")
-                                },
-                                onDragEnd = {
-                                    println("STOPPED")
+                        .pointerInput(1) {
+                            awaitPointerEventScope {
+                                var prevPos = Offset.Zero
+                                while (true) {
+                                    val event = awaitPointerEvent()
+                                    when (event.type) {
+                                        PointerEventType.Press -> vm.canvasCursorDown(event.changes.first().position)
+                                        PointerEventType.Move -> vm.canvasCursorMove(event.changes.first().position - prevPos)
+                                        PointerEventType.Release -> vm.canvasCursorUp()
+                                    }
+                                    prevPos = event.changes.first().position
                                 }
-                            )
+                            }
+                        }
+                        .pointerInput(0) {
+                            detectTransformGestures { centroid, pan, zoom, rotation ->
+                            }
                         }
                 )
                 {
+                    try{
+                        drawImage(vm.bitmapStack[vm.bitmapStack.lastIndex + vm.memoryIndexOffset].asImageBitmap())
+                    }
+                    catch (e: Exception){
 
+                    }
                 }
             }
             Divider(thickness = 2.dp)
@@ -114,6 +141,7 @@ fun PaintRoot() {
                     message = "Назад"
                 )
                 {
+                    vm.backStack()
                 }
                 ImageButton(
                     imageResId = R.drawable.arrow_forward,
@@ -123,6 +151,7 @@ fun PaintRoot() {
                     message = "Вперед"
                 )
                 {
+                    vm.forwardStack()
                 }
             }
             Row(
