@@ -1,7 +1,6 @@
-package com.example.paintfeature.CanvasCursorProcessing
+package com.example.paintfeature.DrawFunctions
 
 import android.graphics.Bitmap
-import android.graphics.Color
 import androidx.core.graphics.set
 
 fun drawBresenhamLine (xstart : Int, ystart: Int, xend: Int, yend: Int, color: Int, result: Bitmap)

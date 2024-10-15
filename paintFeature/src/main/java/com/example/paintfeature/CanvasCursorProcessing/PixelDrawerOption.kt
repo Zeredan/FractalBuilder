@@ -3,7 +3,7 @@ package com.example.paintfeature.CanvasCursorProcessing
 import android.graphics.Bitmap
 import android.graphics.Color
 import androidx.compose.ui.geometry.Offset
-import androidx.core.graphics.set
+import com.example.paintfeature.DrawFunctions.drawBresenhamLine
 import com.example.paintfeature.ViewModels.PaintViewModel
 import kotlin.math.roundToInt
 

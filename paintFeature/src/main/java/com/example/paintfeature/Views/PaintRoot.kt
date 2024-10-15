@@ -1,6 +1,8 @@
 package com.example.paintfeature.Views
 
 import android.annotation.SuppressLint
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.view.MotionEvent
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.ExperimentalFoundationApi
@@ -21,6 +23,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.grid.GridCells
@@ -34,6 +37,7 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.SnackbarVisuals
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -43,6 +47,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
@@ -54,6 +59,8 @@ import androidx.compose.ui.input.pointer.positionChange
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.layout.positionInWindow
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -67,6 +74,8 @@ import kotlinx.coroutines.launch
 @Composable
 fun PaintRoot() {
     val vm = viewModel<PaintViewModel>()
+    val context = LocalContext.current
+    vm.fillBitmap = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(context.resources, R.drawable.polygon), 120, 120, false)
     var snackbarHostState = remember{ SnackbarHostState() }
     var coroutineScope = rememberCoroutineScope()
     Scaffold(
@@ -91,9 +100,17 @@ fun PaintRoot() {
                     .aspectRatio(1f)
                     .onSizeChanged {
                         vm.canvasSizeStateFlow.value = it
-                    }
+                    },
+                contentAlignment = Alignment.Center
             )
             {
+                var density = LocalDensity.current.density
+                LaunchedEffect(vm.selectedOption){
+                    if (vm.selectedOption != null){
+                        vm.canvasScale = 1f
+                        vm.canvasOffset = Offset.Zero
+                    }
+                }
                 Canvas(
                     modifier = Modifier
                         .background(Color.Green)
@@ -114,8 +131,16 @@ fun PaintRoot() {
                         }
                         .pointerInput(0) {
                             detectTransformGestures { centroid, pan, zoom, rotation ->
+                                if (vm.selectedOption == null) {
+                                    vm.canvasOffset += pan
+                                    val totalZoom = if (vm.canvasScale * zoom <= 1f) 1f / vm.canvasScale else zoom
+                                    vm.canvasScale *= totalZoom
+                                    vm.canvasOffset *= totalZoom
+                                }
                             }
                         }
+                        .offset((vm.canvasOffset.x / density).dp, (vm.canvasOffset.y / density).dp)
+                        .scale(vm.canvasScale)
                 )
                 {
                     try{
@@ -129,7 +154,7 @@ fun PaintRoot() {
             Divider(thickness = 2.dp)
             Row(
                 modifier = Modifier
-                    .fillMaxWidth(0.7f),
+                    .fillMaxWidth(0.9f),
                 horizontalArrangement = Arrangement.spacedBy(10.dp)
             )
             {
@@ -156,10 +181,19 @@ fun PaintRoot() {
             }
             Row(
                 modifier = Modifier
-                    .fillMaxWidth(0.7f),
+                    .fillMaxWidth(0.9f),
                 horizontalArrangement = Arrangement.spacedBy(10.dp)
             )
             {
+                ImageButton(
+                    imageResId = R.drawable.pen,
+                    changeSelection = true,
+                    vm,
+                    snackbarHostState = snackbarHostState,
+                    message = "Пиксельное построение"
+                )
+                {
+                }
                 ImageButton(
                     imageResId = R.drawable.line,
                     changeSelection = true,
@@ -190,7 +224,7 @@ fun PaintRoot() {
             }
             Row(
                 modifier = Modifier
-                    .fillMaxWidth(0.7f),
+                    .fillMaxWidth(0.9f),
                 horizontalArrangement = Arrangement.spacedBy(10.dp)
             )
             {

@@ -1,26 +1,27 @@
 package com.example.paintfeature.ViewModels
 
+import android.content.res.Resources
 import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.graphics.Color
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.unit.IntSize
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.cg_lab2.R
 import com.example.paintfeature.CanvasCursorProcessing.BesierBuilderOption
 import com.example.paintfeature.CanvasCursorProcessing.CircleBuilderOption
+import com.example.paintfeature.CanvasCursorProcessing.FillColorBarkBeetle
+import com.example.paintfeature.CanvasCursorProcessing.FillImageAmplified
 import com.example.paintfeature.CanvasCursorProcessing.LineBuilderOption
 import com.example.paintfeature.CanvasCursorProcessing.PixelDrawerOption
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 
 class PaintViewModel : ViewModel() {
@@ -36,19 +37,24 @@ class PaintViewModel : ViewModel() {
 
         }
     }
+    var canvasScale by mutableStateOf(1f)
+    var canvasOffset by mutableStateOf(Offset.Zero)
     var selectedOption by mutableStateOf<Int?>(null)
         private set
     var memoryIndexOffset by mutableStateOf(0)
     var bitmapStack = mutableStateListOf<Bitmap>()
     val reqDeactivate = listOf(R.drawable.besie)
 
+    lateinit var fillBitmap: Bitmap
     var canvasSizeStateFlow : MutableStateFlow<IntSize> = MutableStateFlow(IntSize.Zero)
 
     private val options = mapOf<Int?, ControlOption>(
-        null to PixelDrawerOption(this),
+        R.drawable.pen to PixelDrawerOption(this),
         R.drawable.line to LineBuilderOption(this),
         R.drawable.circle to CircleBuilderOption(this),
-        R.drawable.besie to BesierBuilderOption(this)
+        R.drawable.besie to BesierBuilderOption(this),
+        R.drawable.rows to FillColorBarkBeetle(this),
+        R.drawable.polygon to FillImageAmplified(this)
     )
 
     init{

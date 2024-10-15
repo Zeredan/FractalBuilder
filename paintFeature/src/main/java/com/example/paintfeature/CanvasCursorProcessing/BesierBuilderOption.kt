@@ -3,14 +3,13 @@ package com.example.paintfeature.CanvasCursorProcessing
 import android.graphics.Bitmap
 import android.graphics.Color
 import androidx.compose.ui.geometry.Offset
-import androidx.core.graphics.set
+import com.example.paintfeature.DrawFunctions.drawBresenhamLine
 import com.example.paintfeature.ViewModels.PaintViewModel
 import kotlin.math.roundToInt
-import kotlin.math.sqrt
 
 class BesierBuilderOption(vm: PaintViewModel) : PaintViewModel.ControlOption(vm) {
     private var points = mutableListOf<Offset>()
-
+    private lateinit var initialBitmap: Bitmap
 
     private infix fun Pair<Offset, Offset>.percent(frac: Float) : Offset{
         return Offset(
@@ -52,8 +51,12 @@ class BesierBuilderOption(vm: PaintViewModel) : PaintViewModel.ControlOption(vm)
     }
 
     override suspend fun onDown(offset: Offset) {
+        if (points.isEmpty()){
+            initialBitmap = vm.bitmapStack[vm.bitmapStack.lastIndex + vm.memoryIndexOffset]
+            vm.addWithMemory(initialBitmap)
+        }
         points += offset
-        println(points.joinToString("|||"))
+        vm.bitmapStack[vm.bitmapStack.lastIndex + vm.memoryIndexOffset] = initialBitmap.withBesier()
     }
 
     override suspend fun onMove(offset: Offset) {
@@ -65,9 +68,6 @@ class BesierBuilderOption(vm: PaintViewModel) : PaintViewModel.ControlOption(vm)
     }
 
     override suspend fun onDisableControl() {
-        if (points.isNotEmpty()){
-            vm.addWithMemory(vm.bitmapStack[vm.bitmapStack.lastIndex + vm.memoryIndexOffset].withBesier())
-        }
     }
 
     override suspend fun onEnableControl() {
