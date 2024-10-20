@@ -1,8 +1,11 @@
 package com.example.cg_lab2
 
+import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.activity.viewModels
+import androidx.annotation.RequiresApi
 import androidx.compose.animation.core.EaseInQuart
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.ExperimentalFoundationApi
@@ -55,6 +58,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.cg_lab2.ViewModels.AppViewModel
 import com.example.cg_lab2.Views.NextNavigationButton
 import com.example.cg_lab2.Views.PrevNavigationButton
 import com.example.cg_lab2.ui.theme.CG_lab2Theme
@@ -72,52 +77,42 @@ fun Modifier.coloredGradient(colors: List<Color>) : Modifier{
 
 class MainActivity : ComponentActivity() {
 
-    val contentScreens = linkedMapOf<String, @Composable () -> Unit>(
-        "Task1" to { FractalBuilderRoot() },
-        "Task2" to { PaintRoot() },
-    )
 
+
+    @RequiresApi(Build.VERSION_CODES.TIRAMISU)
     @OptIn(ExperimentalFoundationApi::class)
     @Composable
     fun RootComposable(){
         val width = LocalConfiguration.current.screenWidthDp
         val density = LocalDensity.current.density
         val coroutineScope = rememberCoroutineScope()
+        val vm by viewModels<AppViewModel>()
 
-        var anchoredDraggableState = remember{
-            AnchoredDraggableState<String>(
-                initialValue = "Task1",
-                anchors = DraggableAnchors<String> {
-                    contentScreens.entries.forEachIndexed{ ind, (name) ->
-                        name at ind * width * density
-                    }
-                },
-                positionalThreshold = { it1 ->
-                    it1 * 0.5f
-                },
-                velocityThreshold = {
-                    100f
-                },
-                animationSpec = tween(200, 0, EaseInQuart)
-            )
-        }
+        vm.coroutineScope = coroutineScope
+        vm.anchoredDraggableState.updateAnchors(
+            DraggableAnchors<String> {
+                vm.contentScreens.entries.forEachIndexed{ ind, (name) ->
+                    name at ind * width * density
+                }
+            }
+        )
 
         Row(
             modifier = Modifier
                 .coloredGradient(listOf(Color.Gray, Color.DarkGray))
                 .fillMaxSize()
                 .horizontalScroll(
-                    ScrollState(anchoredDraggableState.offset.toInt()),
+                    ScrollState(vm.anchoredDraggableState.offset.toInt()),
                     enabled = false
                 )
                 .anchoredDraggable(
-                    state = anchoredDraggableState,
+                    state = vm.anchoredDraggableState,
                     orientation = Orientation.Horizontal,
                     reverseDirection = true
                 )
         )
         {
-            contentScreens.entries.forEachIndexed { ind, data ->
+            vm.contentScreens.entries.forEachIndexed { ind, data ->
                 Column(
                     modifier = Modifier
                         .width(width.dp)
@@ -139,7 +134,7 @@ class MainActivity : ComponentActivity() {
                                     .size(100.dp),
                                 onClick = {
                                     coroutineScope.launch {
-                                        anchoredDraggableState.animateTo(contentScreens.entries.toList()[ind - 1].key)
+                                        vm.anchoredDraggableState.animateTo(vm.contentScreens.entries.toList()[ind - 1].key)
                                     }
                                 }
                             )
@@ -154,14 +149,14 @@ class MainActivity : ComponentActivity() {
                             color = Color.White,
                             textAlign = TextAlign.Center
                         )
-                        if (ind < contentScreens.size - 1){
+                        if (ind < vm.contentScreens.size - 1){
                             NextNavigationButton(
                                 modifier = Modifier
                                     .coloredGradient(listOf(Color.Blue, Color.Cyan))
                                     .size(100.dp),
                                 onClick = {
                                     coroutineScope.launch {
-                                        anchoredDraggableState.animateTo(contentScreens.entries.toList()[ind + 1].key)
+                                        vm.anchoredDraggableState.animateTo(vm.contentScreens.entries.toList()[ind + 1].key)
                                     }
                                 }
                             )
@@ -183,13 +178,7 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    class VM1 : ViewModel(){
-        var strst by mutableStateOf("")
-    }
-    class VM2: ViewModel(){
-        var intstr by mutableStateOf(0)
-    }
-
+    @RequiresApi(Build.VERSION_CODES.TIRAMISU)
     @OptIn(ExperimentalComposeUiApi::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

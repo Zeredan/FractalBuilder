@@ -17,3 +17,4 @@ rootProject.name = "CG_lab2"
 include(":app")
 include(":paintFeature")
 include(":fractalBuilderFeature")
+include(":ImageProcessingFeature")
