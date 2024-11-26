@@ -1,5 +1,5 @@
 plugins {
-    id("com.android.application")
+    id("com.android.library")
     id("org.jetbrains.kotlin.android")
     id("kotlin-kapt")
 }
@@ -8,18 +8,7 @@ android {
     namespace = "com.example.cg_lab2"
     compileSdk = 34
 
-    defaultConfig {
-        applicationId = "com.example.cg_lab2"
-        minSdk = 24
-        targetSdk = 34
-        versionCode = 1
-        versionName = "1.0"
 
-        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-        vectorDrawables {
-            useSupportLibrary = true
-        }
-    }
 
     buildTypes {
         release {
@@ -96,9 +85,4 @@ dependencies {
     kapt("com.google.dagger:dagger-compiler:2.51.1")
     implementation("com.google.dagger:dagger-android:2.51.1")
     kapt("com.google.dagger:dagger-android-processor:2.51.1")
-
-    implementation(project(":paintFeature"))
-    implementation(project(":fractalBuilderFeature"))
-    implementation(project(":ImageProcessingFeature"))
-    implementation(project(":projecting_feature"))
 }

@@ -13,6 +13,7 @@
             <option value="$PROJECT_DIR$/app" />
             <option value="$PROJECT_DIR$/fractalBuilderFeature" />
             <option value="$PROJECT_DIR$/paintFeature" />
+            <option value="$PROJECT_DIR$/projecting_feature" />
           </set>
         </option>
         <option name="resolveExternalAnnotations" value="false" />
